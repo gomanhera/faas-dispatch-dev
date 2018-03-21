@@ -34,6 +34,8 @@ type BaseImageBuilder struct {
 	es               entitystore.EntityStore
 	dockerClient     docker.ImageAPIClient
 	orgID            string
+	registryHost string
+	registryAuth string
 }
 
 // ImageBuilder manages building images
@@ -52,7 +54,7 @@ type imageStatusResult struct {
 }
 
 // NewBaseImageBuilder is the constructor for the BaseImageBuilder
-func NewBaseImageBuilder(es entitystore.EntityStore) (*BaseImageBuilder, error) {
+func NewBaseImageBuilder(es entitystore.EntityStore,registryHost, registryAuth string) (*BaseImageBuilder, error) {
 	defer trace.Trace("NewBaseImageBuilder")()
 	dockerClient, err := docker.NewEnvClient()
 	if err != nil {
@@ -65,6 +67,8 @@ func NewBaseImageBuilder(es entitystore.EntityStore) (*BaseImageBuilder, error) 
 		es:               es,
 		dockerClient:     dockerClient,
 		orgID:            ImageManagerFlags.OrgID,
+		registryHost: registryHost,
+		registryAuth: registryAuth,
 	}, nil
 }
 
@@ -73,8 +77,10 @@ func (b *BaseImageBuilder) baseImagePull(baseImage *BaseImage) error {
 	// TODO (bjung): Need to use a lock of some sort in case we have multiple instanances of image builder running
 	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
 	defer cancel()
+	opts := dockerTypes.ImagePullOptions{}	
+	opts.RegistryAuth = b.registryAuth
 	log.Printf("Pulling image %s/%s from %s", baseImage.OrganizationID, baseImage.Name, baseImage.DockerURL)
-	rc, err := b.dockerClient.ImagePull(ctx, baseImage.DockerURL, dockerTypes.ImagePullOptions{All: false})
+	rc, err := b.dockerClient.ImagePull(ctx, baseImage.DockerURL, opts)
 	if err == nil {
 		defer rc.Close()
 		scanner := bufio.NewScanner(rc)
@@ -274,7 +280,9 @@ func (b *ImageBuilder) imageCreate(image *Image, baseImage *BaseImage) error {
 	}
 	defer cleanup(tmpDir)
 
-	if err := images.DockerError(b.dockerClient.ImagePull(context.Background(), baseImage.DockerURL, dockerTypes.ImagePullOptions{})); err != nil {
+	opts := dockerTypes.ImagePullOptions{}	
+	opts.RegistryAuth = b.registryAuth
+	if err := images.DockerError(b.dockerClient.ImagePull(context.Background(), baseImage.DockerURL, opts)); err != nil {
 		return errors.Wrap(err, "failed to pull image")
 	}
 

@@ -9,7 +9,7 @@ GIT_VERSION = $(shell git describe --tags)
 GOPATH := $(firstword $(subst :, ,$(GOPATH)))
 SWAGGER := $(GOPATH)/bin/swagger
 GOBINDATA := $(GOPATH)/bin/go-bindata
-BUILD := $(shell date +%s)
+BUILD := "v0.1.7"
 
 PKGS := pkg
 

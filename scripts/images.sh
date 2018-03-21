@@ -1,10 +1,10 @@
 #!/bin/bash
 
-: ${DOCKER_REGISTRY:="vmware"}
+: ${DOCKER_REGISTRY:="registry.ghama.io/vmware"}
 
 PACKAGE=${1}
 BUILD=${2}
-TAG=dev-${BUILD}
+TAG=${BUILD}
 
 if [ -n "$CI" ]; then
     TAG=$IMAGE_TAG

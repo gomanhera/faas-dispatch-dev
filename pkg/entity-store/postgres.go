@@ -257,10 +257,10 @@ func (p *postgresEntityStore) Add(entity Entity) (id string, err error) {
 
 // Update updates existing entities to the store
 func (p *postgresEntityStore) Update(lastRevision uint64, entity Entity) (revision int64, err error) {
-
+	log.Printf("postgress update lastRevision=%s, entity=%s", lastRevision, entity)
 	entity.setModifiedTime(time.Now())
 	entity.setRevision(lastRevision)
-	sql := `
+/*	sql := `
 	UPDATE entity
 	SET
 		id = :id, name = :name, organization_id = :organization_id, created_time = :created_time,
@@ -269,6 +269,15 @@ func (p *postgresEntityStore) Update(lastRevision uint64, entity Entity) (revisi
 	WHERE
 		key = :key AND
 		revision = :revision
+	`*/
+	sql := `
+	UPDATE entity
+	SET
+		id = :id, name = :name, organization_id = :organization_id, created_time = :created_time,
+		modified_time = :modified_time, revision = revision + 1, version = :version,
+		spec = :spec, status = :status, reason = :reason , tags = :tags, delete = :delete, value = :value
+	WHERE
+		key = :key
 	`
 	row, err := entityToDbEntity(entity)
 	if err != nil {

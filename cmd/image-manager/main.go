@@ -121,7 +121,7 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	bib, err := imagemanager.NewBaseImageBuilder(es)
+	bib, err := imagemanager.NewBaseImageBuilder(es, config.Global.Registry.RegistryURI, registryAuth)
 	if err != nil {
 		log.Fatalln(err)
 	}

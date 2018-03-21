@@ -83,6 +83,8 @@ spec:
                   key: organization
           resources:
 {{ toYaml .Values.resources | indent 12 }}
+      imagePullSecrets:
+      - name: {{ default .Values.global.image.imagePullSecrets .Values.image.imagePullSecrets }}
       volumes:
         - name: {{ template "fullname" . }}
 {{- if default .Values.global.data.persist .Values.data.persist }}

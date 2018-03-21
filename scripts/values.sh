@@ -5,5 +5,5 @@
 cat << EOF > $VALUES_PATH
 global:
     image:
-        tag: dev-${1}
+        tag: {1}
 EOF

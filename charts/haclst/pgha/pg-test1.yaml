@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pg-test1
+spec:
+  containers:
+    - name: pg-test1
+      image: partlab/ubuntu-postgresql
+      volumeMounts:
+      - mountPath: "/data"
+        name: nfsdata
+  volumes:
+    - name: nfsdata
+      persistentVolumeClaim:
+        claimName: nfsdataclaim

@@ -90,7 +90,7 @@ spec:
           resources:
 {{ toYaml .Values.resources | indent 12 }}
         - name: {{ .Chart.Name }}-docker
-          image: docker:dind
+          image: {{ default .Values.global.registry.docker .Values.registry.docker }}
           imagePullPolicy: {{ default .Values.global.pullPolicy .Values.image.pullPolicy }}
           {{- if default .Values.global.registry.insecure .Values.registry.insecure }}
           args:
@@ -101,6 +101,8 @@ spec:
           volumeMounts:
           - name: docker-graph-storage
             mountPath: /var/lib/docker
+      imagePullSecrets:
+      - name: {{ default .Values.global.image.imagePullSecrets .Values.image.imagePullSecrets }}
       volumes:
         - name: {{ template "fullname" . }}
 {{- if default .Values.global.data.persist .Values.data.persist }}

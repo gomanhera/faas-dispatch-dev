@@ -59,21 +59,26 @@ func (h *Handlers) ConfigureHandlers(api middleware.RoutableAPI) {
 func (h *Handlers) addSubscription(params subscriptionsapi.AddSubscriptionParams, principal interface{}) middleware.Responder {
 	defer trace.Trace("addSubscription")()
 
+	log.Printf("addSubscription called")
 	sp, _ := utils.AddHTTPTracing(params.HTTPRequest, "EventManager.addSubscription")
 	defer sp.Finish()
 
+	log.Printf("before validate")
 	if err := params.Body.Validate(strfmt.Default); err != nil {
 		return eventsapi.NewEmitEventBadRequest().WithPayload(&models.Error{
 			Code:    http.StatusBadRequest,
 			Message: swag.String(fmt.Sprintf("error validating the payload: %s", err)),
 		})
 	}
-
+	log.Printf("before creating subscription entity")
 	s := &entities.Subscription{}
 	s.FromModel(params.Body, h.orgID)
+	log.Printf("before setting set status to CREATING")
 	s.Status = entitystore.StatusCREATING
+	log.Printf("before add subscription to store")
 	_, err := h.store.Add(s)
 	if err != nil {
+		log.Printf("error when storing the subscription: %+v", err)
 		log.Errorf("error when storing the subscription: %+v", err)
 		return eventsapi.NewEmitEventInternalServerError().WithPayload(&models.Error{
 			Code:    http.StatusInternalServerError,
